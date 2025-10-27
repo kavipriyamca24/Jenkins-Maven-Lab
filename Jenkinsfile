@@ -16,33 +16,31 @@ pipeline {
         stage('Build') {
             steps {
                 echo "Running mvn clean install"
-                sh 'mvn -B clean install'
+                bat 'mvn -B clean install'
             }
         }
 
         stage('Test Results') {
             steps {
-                // test results will be published in post/always
-                echo "Testing finished — will publish results"
+                echo "Running unit tests..."
+                junit '**/target/surefire-reports/*.xml'
             }
         }
 
-        stage('Archive') {
+        stage('Archive Artifacts') {
             steps {
-                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true, allowEmptyArchive: true
+                echo "Archiving built JAR files..."
+                archiveArtifacts artifacts: 'target/*.jar', fingerprint: true
             }
         }
     }
 
     post {
-        always {
-            junit '**/target/surefire-reports/*.xml'
-        }
         success {
-            echo 'Build SUCCESS'
+            echo '✅ Build SUCCESSFUL!'
         }
         failure {
-            echo 'Build FAILED'
+            echo '❌ Build FAILED!'
         }
     }
 }
